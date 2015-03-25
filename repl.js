@@ -4,7 +4,8 @@ var client  = arDrone.createClient();
 client.takeoff();
 
 client
-  .after(3000, function() {
+  .after(7000, function() {
     this.stop();
     this.land();
   });
+  

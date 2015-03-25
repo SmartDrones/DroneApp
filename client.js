@@ -1,45 +1,26 @@
-var socket = require('socket.io-client')('http://localhost:8080/');
+console.log('start waiting for serialport...');
+var serialport = require('node-serialport')
 var arDrone = require('ar-drone');
-var mDrone  = arDrone.createClient();
+var client  = arDrone.createClient();
 
-var id = null;
-
-
-socket.on('connect', function(){console.log("drone connected to the server !");});
-
-socket.on('id', function(data){id = data; console.log("my id : "+id);});
-
-socket.on("server_cmd", function(data){
-	if(data.id_drones.indexOf(id)!==-1)
-	{
-		//the drone is concerned by the command.
-		switch(data.cmd){
-			case "takeoff" :
-				mDrone.takeoff();
-				console.log("taking off ! zouuuuuh");
-				break;
-
-			case "landing" :
-				mDrone.stop();
-				mDrone.land();
-				console.log("back on earth !");
-				break;
-
-			case "scene" :
-				switch(data.args.nb){
-					case 1 :
-						break;
-					case 2 :
-						break;
-					case 3 :
-						break;
-				}
-				break;
-		}
-
-		
-	}
-
+var sp = new serialport.SerialPort("/dev/ttyO3", {
+   //parser: serialport.parsers.raw,
+   baud: 9600
 });
 
-socket.on('disconnect', function(){});
+sp.on('open', function(){
+        console.log('serial connection opened !');
+        sp.flush();
+});
+
+sp.on('data', function(chunk) {
+        try{
+			var cmd = chunk.toString().replace(" ", "");
+			console.log("Cmd : " + cmd);
+
+			console.log(cmd + ' bitch !!');
+			client[cmd]();
+        } catch(e) {
+                console.log(e);
+        }
+});
